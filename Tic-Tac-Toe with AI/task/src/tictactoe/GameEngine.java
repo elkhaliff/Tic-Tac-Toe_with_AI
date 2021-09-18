@@ -13,8 +13,8 @@ public class GameEngine {
     final String o = "O";
     private int cntX = 0;
     private int cntO = 0;
-    String winX = "";
-    String winO = "";
+    String winX;
+    String winO;
 
     private final String [][] fieldMap;
 
@@ -26,10 +26,14 @@ public class GameEngine {
          */
         fieldMap = new String[rows][cols];
 
+        StringBuilder wx = new StringBuilder();
+        StringBuilder wo = new StringBuilder();
         for (int i = 0; i < cols; i++) {
-            winX += x;
-            winO += o;
+            wx.append(x);
+            wo.append(o);
         }
+        winX = wx.toString();
+        winO = wo.toString();
     }
 
     /**
@@ -45,23 +49,21 @@ public class GameEngine {
      */
     @Override
     public String toString() {
-        String outStr = "";
-        String border = "";
+        StringBuilder outStr = new StringBuilder();
+        StringBuilder border = new StringBuilder(" ");
 
-        for (int i = 1; i < cols*3+1; i++) {
-            border += "-";
-        }
-        border += "\n";
-        outStr += border;
+        border.append("-".repeat(Math.max(0, cols * 3)));
+        border.append("\n");
+        outStr.append(border);
         for (int i = 0; i < rows; i++) {
-            outStr +=  "| ";
+            outStr.append("| ");
             for (int j = 0; j < cols; j++) {
-                outStr +=  fieldMap[i][j] + " ";
+                outStr.append(fieldMap[i][j]); outStr.append(" ");
             }
-            outStr += "|\n";
+            outStr.append("|\n");
         }
-        outStr += border;
-        return outStr;
+        outStr.append(border);
+        return outStr.toString();
     }
 
     /**
@@ -73,8 +75,8 @@ public class GameEngine {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 switch (fieldMap[i][j]) {
-                    case "X": cntX++; break;
-                    case "O": cntO++; break;
+                    case x: cntX++; break;
+                    case o: cntO++; break;
                 }
             }
         }
@@ -86,7 +88,6 @@ public class GameEngine {
     public String checkGame() {
         boolean isWinX = false; // X wins
         boolean isWin0 = false; // O wins
-        boolean isImposs = false; // Impossible
 
         for (int r=0; r < rows; r++) {
             isWinX = getRow(r).equals(winX) || isWinX;
@@ -113,45 +114,45 @@ public class GameEngine {
      * Получение столбца данных
      */
     private String getCol(int col) {
-        var out = "";
+        StringBuilder out = new StringBuilder();
         for (int r=0; r < rows; r++) {
-            out += fieldMap[r][col];
+            out.append(fieldMap[r][col]);
         }
-        return out;
+        return out.toString();
     }
 
     /**
      * Получение строки данных
      */
     private String getRow(int row) {
-        var out = "";
+        StringBuilder out = new StringBuilder();
         for (int c=0; c < cols; c++) {
-            out += fieldMap[row][c];
+            out.append(fieldMap[row][c]);
         }
-        return out;
+        return out.toString();
     }
 
     /**
      * Получение правой диагонали
      */
     private String getRightDiagonal() {
-        var out = "";
+        StringBuilder out = new StringBuilder();
         for (int c=0; c < cols; c++) {
-            out += fieldMap[c][c];
+            out.append(fieldMap[c][c]);
         }
-        return out;
+        return out.toString();
     }
 
     /**
      * Получение левой диагонали
      */
     private String getLeftDiagonal() {
-        var out = "";
+        StringBuilder out = new StringBuilder();
         var c = cols;
         for (int r=0; r < rows; r++) {
-            out += fieldMap[r][--c];
+            out.append(fieldMap[r][--c]);
         }
-        return out;
+        return out.toString();
     }
 
     /**
