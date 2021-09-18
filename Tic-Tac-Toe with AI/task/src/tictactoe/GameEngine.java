@@ -9,9 +9,12 @@ package tictactoe;
 public class GameEngine {
     private final int rows; // Количество строк
     private final int cols; // Количество столбцов
+    final String x = "X";
+    final String o = "O";
     private int cntX = 0;
     private int cntO = 0;
-
+    String winX = "";
+    String winO = "";
 
     private final String [][] fieldMap;
 
@@ -22,20 +25,18 @@ public class GameEngine {
          * Инициализация массива рабочей области крестиков-ноликов
          */
         fieldMap = new String[rows][cols];
+
+        for (int i = 0; i < cols; i++) {
+            winX += x;
+            winO += o;
+        }
     }
 
     /**
-     * Ход крестиков
+     * Установка хода на доску
      */
-    public void setX(int row, int col) {
-        fieldMap[row][col] = "X";
-    }
-
-    /**
-     * Ход ноликов
-     */
-    public void setO(int row, int col) {
-        fieldMap[row][col] = "O";
+    public void setOnField(int row, int col, String st) {
+        fieldMap[row][col] = st;
     }
 
     /**
@@ -63,7 +64,6 @@ public class GameEngine {
         return outStr;
     }
 
-
     /**
      * Статистика крестиков и ноликов
      */
@@ -79,13 +79,6 @@ public class GameEngine {
             }
         }
     }
-    /**
-     * Кто ходит следующий?
-     */
-    public String getNexStep() {
-        if (cntX > cntO) return "O";
-        return "X";
-    }
 
     /**
      * Проверка поля на ничью и выигрыш одного из игроков
@@ -94,15 +87,6 @@ public class GameEngine {
         boolean isWinX = false; // X wins
         boolean isWin0 = false; // O wins
         boolean isImposs = false; // Impossible
-        String winX = "";
-        String winO = "";
-        for (int i = 0; i < cols; i++) {
-            winX += "X";
-            winO += "O";
-        }
-
-        isImposs = Math.abs(cntX - cntO) >=2;
-        if (isImposs) return "Impossible";
 
         for (int r=0; r < rows; r++) {
             isWinX = getRow(r).equals(winX) || isWinX;
@@ -119,9 +103,6 @@ public class GameEngine {
         isWinX = getLeftDiagonal().equals(winX) || isWinX;
         isWin0 = getLeftDiagonal().equals(winO) || isWin0;
 
-        isImposs = (isWin0 && isWinX) || isImposs;
-
-        if (isImposs) return "Impossible";
         if (isWinX) return "X wins";
         if (isWin0) return "O wins";
         if (!isEmptyCell()) return "Draw";
@@ -188,22 +169,6 @@ public class GameEngine {
     }
 
     /**
-     * Установка ячеек ходов
-     */
-    public void setField(String inputStr) {
-        int c = 0;
-        String step;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                step = String.valueOf(inputStr.toCharArray()[c++]);
-                if (step.equals("X")) cntX++;
-                if (step.equals("O")) cntO++;
-                fieldMap[i][j] = step;
-            }
-        }
-    }
-
-    /**
      * Проверка и установка нового значения
      */
     public int setCoordinates(String step, int row, int col) {
@@ -213,11 +178,7 @@ public class GameEngine {
         if (!isEmpty(row-1, col-1)) {
             return 2;    // This cell is occupied! Choose another one!
         }
-        if (step == "X") {
-            setX(row-1, col-1);
-        } else {
-            setO(row-1, col-1);
-        }
+        setOnField(row-1, col-1, step);
         return 0;
     }
 }

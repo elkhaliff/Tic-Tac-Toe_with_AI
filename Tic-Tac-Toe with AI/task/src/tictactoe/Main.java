@@ -32,14 +32,13 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         GameEngine gameEngine = new GameEngine(3);
         String inputStr = getString("Enter the cells: ");
-        gameEngine.setField(inputStr);
         print(gameEngine.toString());
 
         int row;
         int col;
         int err = -1;
         gameEngine.statXO(); // Сбор статистики по заполненным клеткам
-        String step = gameEngine.getNexStep();
+        String step = "X";
         String checkGameStr = "";
 
         while (checkGameStr == "") { // Цикл получения координат - ожидание хода, проверка результатов
