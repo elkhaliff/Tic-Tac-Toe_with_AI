@@ -1,5 +1,9 @@
 package tictactoe;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Random;
+
 /**
  * Основной класс приложения
  *  @author Andrey Zotov aka OldFox
@@ -11,6 +15,7 @@ public class GameEngine {
     private final int cols; // Количество столбцов
     final String x = "X";
     final String o = "O";
+    final String empty = " ";
     private int cntX = 0;
     private int cntO = 0;
     String winX;
@@ -34,6 +39,12 @@ public class GameEngine {
         }
         winX = wx.toString();
         winO = wo.toString();
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                setOnField(i, j, empty);
+            }
+        }
     }
 
     /**
@@ -50,11 +61,11 @@ public class GameEngine {
     @Override
     public String toString() {
         StringBuilder outStr = new StringBuilder();
-        StringBuilder border = new StringBuilder(" ");
+        StringBuilder border = new StringBuilder();
 
         border.append("-".repeat(Math.max(0, cols * 3)));
-        border.append("\n");
         outStr.append(border);
+        outStr.append("\n");
         for (int i = 0; i < rows; i++) {
             outStr.append("| ");
             for (int j = 0; j < cols; j++) {
@@ -98,16 +109,13 @@ public class GameEngine {
             isWin0 = getCol(c).equals(winO) || isWin0;
         }
 
-        isWinX = getRightDiagonal().equals(winX) || isWinX;
-        isWin0 = getRightDiagonal().equals(winO) || isWin0;
-
-        isWinX = getLeftDiagonal().equals(winX) || isWinX;
-        isWin0 = getLeftDiagonal().equals(winO) || isWin0;
+        isWinX = getRightDiagonal().equals(winX) || getLeftDiagonal().equals(winX) || isWinX;
+        isWin0 = getRightDiagonal().equals(winO) || getLeftDiagonal().equals(winO) || isWin0;
 
         if (isWinX) return "X wins";
         if (isWin0) return "O wins";
         if (!isEmptyCell()) return "Draw";
-        return "Game not finished";
+        return ""; // Game not finished
     }
 
     /**
@@ -159,7 +167,7 @@ public class GameEngine {
      * Проверка на незаполненность
      */
     public boolean isEmpty(int row, int col) {
-        return (fieldMap[row][col].equals("_"));
+        return (fieldMap[row][col].equals(empty));
     }
 
     /**
@@ -172,7 +180,7 @@ public class GameEngine {
     /**
      * Проверка и установка нового значения
      */
-    public int setCoordinates(String step, int row, int col) {
+    public int setCoordinates(int row, int col, String step) {
         if ((row < 1 || row > 3) || (col < 1 || col > 3)) {
             return 1;    // Coordinates should be from 1 to 3!
         }
@@ -180,6 +188,18 @@ public class GameEngine {
             return 2;    // This cell is occupied! Choose another one!
         }
         setOnField(row-1, col-1, step);
-        return 0;
+        return 0; // no errors
+    }
+
+    public Point turnAI() {
+        ArrayList<Point> points = new ArrayList<Point>();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (isEmpty(i, j)) points.add(new Point(i, j));
+            }
+        }
+        Random random = new Random();
+        int rnd = random.nextInt(points.size());
+        return points.get(rnd);
     }
 }
