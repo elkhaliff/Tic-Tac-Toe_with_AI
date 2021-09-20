@@ -3,6 +3,7 @@ package tictactoe;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * Основной класс приложения
@@ -13,8 +14,13 @@ import java.util.Random;
 public class GameEngine {
     private final int rows; // Количество строк
     private final int cols; // Количество столбцов
-    final String x = "X";
-    final String o = "O";
+    final String cmdExit = "exit";
+    final String cmdStart = "start";
+    final String cmdEasy = "easy";
+    final String cmdUser = "user";
+
+    final String symbolX = "X";
+    final String symbolO = "O";
     final String empty = " ";
     private int cntX = 0;
     private int cntO = 0;
@@ -22,6 +28,8 @@ public class GameEngine {
     String winO;
 
     private final String [][] fieldMap;
+    private String gamerX;
+    private String gamerO;
 
     public GameEngine(int cells) {
         this.rows = cells;
@@ -34,8 +42,8 @@ public class GameEngine {
         StringBuilder wx = new StringBuilder();
         StringBuilder wo = new StringBuilder();
         for (int i = 0; i < cols; i++) {
-            wx.append(x);
-            wo.append(o);
+            wx.append(symbolX);
+            wo.append(symbolO);
         }
         winX = wx.toString();
         winO = wo.toString();
@@ -86,8 +94,8 @@ public class GameEngine {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 switch (fieldMap[i][j]) {
-                    case x: cntX++; break;
-                    case o: cntO++; break;
+                    case symbolX: cntX++; break;
+                    case symbolO: cntO++; break;
                 }
             }
         }
@@ -191,8 +199,105 @@ public class GameEngine {
         return 0; // no errors
     }
 
-    public Point turnAI() {
-        ArrayList<Point> points = new ArrayList<Point>();
+    public boolean setParamGame() {
+        String input;
+        final String badParams = "Bad parameters!";
+        while (true) {
+            input = getString("Input command: ").trim();
+            if (input.equals(cmdExit)) {
+                return false;
+            } else if (input.contains(cmdStart)) {
+                String[] arrInput = input.split(" ");
+                if ((arrInput.length < 3) ||
+                    (!arrInput[1].equals(cmdEasy) && !arrInput[1].equals(cmdUser) &&
+                    !arrInput[2].equals(cmdEasy) && !arrInput[2].equals(cmdUser))) {
+                        println(badParams);
+                } else {
+                    gamerX = arrInput[1];
+                    gamerO = arrInput[2];
+                    return true;
+                }
+            } else {
+                println(badParams);
+            }
+        }
+    }
+
+    public void startGame() {
+        println(this.toString());
+
+        String step = symbolX;
+        String checkGameStr = "";
+
+        while (checkGameStr.equals("")) { // Цикл получения координат - ожидание хода, проверка результатов
+            if ((step.equals(symbolX) && gamerX.equals(cmdUser)) ||
+                    (step.equals(symbolO) && gamerO.equals(cmdUser))) {
+                turnUser(step);
+            } else {
+                String level = (step.equals(symbolX)) ? gamerX : gamerO;
+                turnAI(step, level);
+            }
+            statXO(); // Сбор статистики по заполненным клеткам
+            checkGameStr = checkGame();
+            println(this.toString());
+            step = (step.equals(symbolO)) ? symbolX : symbolO;
+        }
+        println(checkGameStr);
+    }
+
+    private static String getString(String input) {
+        Scanner scanner = new Scanner(System.in);
+        print(input);
+        return scanner.nextLine();
+    }
+
+    private static void print(String string) {
+        System.out.print(string);
+    }
+
+    private static void println(String string) {
+        System.out.println(string);
+    }
+
+    private static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            Integer.parseInt(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+    }
+
+    private void turnUser(String step) {
+        Scanner scanner = new Scanner(System.in);
+        int row;
+        int col;
+        int err = -1;
+        while (err != 0) {
+            print("Enter the coordinates: ");
+            String[] str = scanner.nextLine().split(" "); // Запрашиваем ход игрока,
+            if ((str.length < 2) || (!isNumeric(str[0])) || (!isNumeric(str[1]))) {
+                println("You should enter numbers!");
+                continue;
+            }
+            row = Integer.parseInt(str[0]);
+            col = Integer.parseInt(str[1]);
+
+            err = setCoordinates(row, col, step); // устанавливаем ход на доску
+            if (err == 1) {
+                println("Coordinates should be from 1 to 3!");
+            } else if (err == 2) {
+                println("This cell is occupied! Choose another one!");
+            }
+        }
+    }
+
+    private void turnAI(String step, String level) {
+        ArrayList<Point> points = new ArrayList<>();
+        println("Making move level \"" + level + "\" (" + step + "): ");
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 if (isEmpty(i, j)) points.add(new Point(i, j));
@@ -200,6 +305,7 @@ public class GameEngine {
         }
         Random random = new Random();
         int rnd = random.nextInt(points.size());
-        return points.get(rnd);
+        Point point = points.get(rnd);
+        setCoordinates(point.x + 1, point.y + 1, step); // устанавливаем ход на доску
     }
 }
