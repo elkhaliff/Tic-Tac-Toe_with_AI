@@ -9,6 +9,11 @@ public class GameMap {
     final String empty = " ";
     private int cntX = 0;
     private int cntO = 0;
+    private int step;
+
+    public int getStep() {
+        return step;
+    }
 
     String winX;
     String winO;
@@ -38,6 +43,7 @@ public class GameMap {
         }
         winX = wx.toString();
         winO = wo.toString();
+        step = 0;
 
     }
 
@@ -45,6 +51,7 @@ public class GameMap {
      * Установка хода на доску
      */
     public void setOnField(int row, int col, Cell cell) {
+        step++;
         fieldMap[row][col] = cell;
     }
 
@@ -68,6 +75,8 @@ public class GameMap {
             outStr.append("|\n");
         }
         outStr.append(border);
+        outStr.append("\n");
+
         return outStr.toString();
     }
 

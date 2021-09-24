@@ -70,11 +70,11 @@ public class Gamer {
                 break;
             }
             case MEDIUM: {
-                point = getMedium(points, gameMap);
+                point = getMedium(points, gameMap, false);
                 break;
             }
             case HARD: {
-                point = getHard(points, gameMap);
+                point = getMedium(points, gameMap, true);
                 break;
             }
             default: {
@@ -86,8 +86,11 @@ public class Gamer {
         gameMap.setOnField(point.x, point.y, cell); // Заполняем ячейку соответствующим символом
     }
 
-    private Point getMedium(ArrayList<Point> points, GameMap gameMap) {
+    private Point getMedium(ArrayList<Point> points, GameMap gameMap, boolean withMiniMax) {
         GameState gameState;
+        Point centerPoint = new Point(1, 1);
+
+        if ((gameMap.getStep() < 2) && points.contains(centerPoint)) return centerPoint;
 
         for (Point point: points) {
             gameMap.setOnField(point.x, point.y, cell);
@@ -112,12 +115,14 @@ public class Gamer {
             gameMap.setOnField(point.x, point.y, Cell.EMPTY);
         }
 
-        return getEasy(points);
+        return withMiniMax ? getHard(points, gameMap) : getEasy(points);
     }
 
     private Point getHard(ArrayList<Point> points, GameMap gameMap) {
-        Point bestTurn = getEasy(points);
+        Point bestTurn = points.get(0);
         int bestScore = Integer.MIN_VALUE;
+        int rows = gameMap.getRows();
+        int cols = gameMap.getCols();
 
         for (Point point: points) {
             gameMap.setOnField(point.x, point.y, cell);
@@ -132,29 +137,30 @@ public class Gamer {
         return bestTurn;
     }
 
-    private int minimax(GameMap gameMap, Cell otherSide, boolean isMaximize, Cell cell, int depth) {
+    private int minimax(GameMap gameMap, Cell oponent, boolean isMax, Cell gamer, int depth) {
         GameState gameState = gameMap.checkGame();
-        Point point;
+        int rows = gameMap.getRows();
+        int cols = gameMap.getCols();
+        final int factor = 4;
 
         switch (gameState) {
             case X_WINS:
-                return cell == Cell.X ? 10 - depth : depth - 10;
+                return Cell.X.equals(gamer) ? factor - depth : depth - factor;
             case O_WINS:
-                return cell == Cell.O ? 10 - depth : depth - 10;
+                return Cell.O.equals(gamer) ? factor - depth : depth - factor;
             case DRAW:
                 return 0;
         }
 
-        int bestScore = isMaximize ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int bestScore = isMax ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
-        for (int i = 0; i < gameMap.getRows(); i++) {
-            for (int j = 0; j < gameMap.getCols(); j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 if (gameMap.isEmpty(i, j)) {
-                    point = new Point(i, j);
-                    gameMap.setOnField(point.x, point.y, otherSide);
-                    int score = minimax(gameMap, Cell.getOtherSide(otherSide), !isMaximize, cell, depth + 1);
-                    gameMap.setOnField(point.x, point.y, Cell.EMPTY);
-                    bestScore = isMaximize ? Math.max(bestScore, score) : Math.min(bestScore, score);
+                    gameMap.setOnField(i, j, oponent);
+                    int score = minimax(gameMap, Cell.getOtherSide(oponent), !isMax, gamer, depth + 1);
+                    gameMap.setOnField(i, j, Cell.EMPTY);
+                    bestScore = isMax ? Math.max(bestScore, score) : Math.min(bestScore, score);
                 }
             }
         }
